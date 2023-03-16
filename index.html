@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Dictionary</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-8 mx-auto">
+        <div class="card">
+          <div class="card-body">
+            <h1 class="text-center mb-5">Dictionary</h1>
+            <form>
+              <div class="form-group">
+                <label for="word">Enter a word:</label>
+                <input type="text" id="word" class="form-control" required>
+              </div>
+              <button type="button" class="btn btn-primary btn-block" onclick="getDefinition()">Search</button>
+            </form>
+            <div id="definition"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery and Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <script>
+    function getDefinition() {
+      const word = document.getElementById("word").value;
+      const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const wordElement = document.createElement("h2");
+          wordElement.textContent = data[0].word;
+          document.getElementById("definition").appendChild(wordElement);
+
+          data[0].meanings.forEach(meaning => {
+            const meaningElement = document.createElement("div");
+            meaningElement.classList.add("mb-3");
+
+            const partOfSpeechElement = document.createElement("h5");
+            partOfSpeechElement.textContent = meaning.partOfSpeech;
+            meaningElement.appendChild(partOfSpeechElement);
+
+            meaning.definitions.forEach(definition => {
+              const definitionElement = document.createElement("p");
+              definitionElement.textContent = definition.definition;
+              meaningElement.appendChild(definitionElement);
+
+              if (definition.example) {
+                const exampleElement = document.createElement("p");
+                exampleElement.innerHTML = `<em>Example:</em> ${definition.example}`;
+                meaningElement.appendChild(exampleElement);
+              }
+
+              if (definition.synonyms) {
+                const synonymsElement = document.createElement("p");
+                synonymsElement.innerHTML = `<em>Synonyms:</em> ${definition.synonyms.join(", ")}`;
+                meaningElement.appendChild(synonymsElement);
+              }
+            });
+
+            document.getElementById("definition").appendChild(meaningElement);
+          });
+
+          const audioElement = document.createElement("audio");
+          audioElement.setAttribute("controls", "");
+          audioElement.innerHTML = `<source src="${data[0].phonetics[0].audio}" type="audio/mpeg">`;
+          document.getElementById("definition").appendChild(audioElement);
+        })
+        .catch(error => {
+          console.log(error);
+          const errorElement = document.createElement("p");
+          errorElement.textContent = `No definition found for "${
+            word}"`;
+      document.getElementById("definition").appendChild(errorElement);
+    });
+}
+
+</script>
+</body>
+</html>
